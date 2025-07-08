@@ -10,8 +10,7 @@ all: build
 
 build:
 	vitis_hls -f $(SCRIPT) | tee $(LOG)
-	mkdir -p $(RTL_DST)
 	cp $(RTL_SRC)/*.v $(RTL_DST)/
 
 clean:
-	rm -rf $(PROJECT_DIR) $(LOG) $(RTL_DST)
+	rm -rf $(PROJECT_DIR) $(LOG)
