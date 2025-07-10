@@ -1,4 +1,4 @@
-open_project fixed_point_divider
+open_project synthesis_result
 set_top divider
 add_files divider.cpp
 add_files -tb testbench.cpp -cflags "-Wno-unknown-pragmas"

@@ -1,4 +1,4 @@
-PROJECT_DIR := fixed_point_divider
+PROJECT_DIR := synthesis_result
 SCRIPT      := script.tcl
 LOG         := vitis_hls.log
 
