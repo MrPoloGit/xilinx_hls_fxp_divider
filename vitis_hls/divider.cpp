@@ -1,7 +1,7 @@
 #include <ap_int.h>
 
 // 1 sign + 4 integer + 3 fractional = 8 bits total
-typedef ap_int<8> fixed8_t;
+typedef ap_fixed<8, 5> fixed8_t;
 
 void divider(
     fixed8_t lhs,
@@ -30,12 +30,24 @@ void divider(
 
     if (in_valid_i && in_ready_o) {
         // Perform fixed-point division (scaled by 2^3 = 8)
-        ap_int<16> lhs_ext = lhs;
-        ap_int<16> rhs_ext = rhs;
-        ap_int<16> dividend = lhs_ext << 3; // shift left to align fixed-point
-        ap_int<16> quotient_ext = dividend / rhs_ext;
-        result = quotient_ext.range(7, 0);  // Truncate back to 8-bit
+        // ap_int<16> lhs_ext = lhs;
+        // ap_int<16> rhs_ext = rhs;
+        // ap_int<16> dividend = lhs_ext << 3; // shift left to align fixed-point, I believe this may be a mistake
+        // ap_int<16> divisor = rhs;
+        // ap_int<16> quotient_ext = dividend / divisor;
+        // result = quotient_ext.range(7, 0);  // Truncate back to 8-bit
+
+        // Vitis should be able to automatically figure out and handle this operation
+        result = lhs / rhs;
         valid_internal = true;
+
+        // #ifndef __SYNTHESIS__
+        //     std::cout << "divider: lhs: " << lhs << ", rhs: " << rhs << "\n";
+        //     std::cout << "divider: lhs_ext: " << lhs_ext << ", rhs_ext: " << rhs_ext << "\n";
+        //     std::cout << "divider: dividend: " << dividend << "\n";
+        //     std::cout << "divider: quotient_ext: " << quotient_ext << "\n";
+        //     std::cout << "divider: result (8-bit): " << result << "\n";
+        // #endif
     }
 
     quotient = result;
