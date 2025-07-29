@@ -2,18 +2,22 @@
 
 // 1 sign + 4 integer + 3 fractional = 8 bits total
 typedef ap_fixed<8, 5> fixed8_t;
+static ap_int<8> raw_min = 0b10000000; 
+static ap_int<8> raw_max = 0b01111111;
+static fixed8_t FixedPointMin = *reinterpret_cast<fixed8_t*>(&raw_min); // -16.0
+static fixed8_t FixedPointMax = *reinterpret_cast<fixed8_t*>(&raw_max); // 15.875
 
 void divider(
-    fixed8_t lhs,
-    fixed8_t rhs,
+    fixed8_t dividend_i,
+    fixed8_t divisor_i,
     bool     &in_ready_o,     // tells upstream "I'm ready to accept input"
     bool     in_valid_i,      // tells this module "upstream has valid input"
     fixed8_t &quotient,
     bool     out_ready_i,     // tells this module "downstream is ready to accept output"
     bool     &out_valid_o     // tells downstream "I have valid output"
 ) {
-    #pragma HLS INTERFACE ap_none port=lhs
-    #pragma HLS INTERFACE ap_none port=rhs
+    #pragma HLS INTERFACE ap_none port=dividend_i
+    #pragma HLS INTERFACE ap_none port=divisor_i
     #pragma HLS INTERFACE ap_none port=in_ready_o
     #pragma HLS INTERFACE ap_none port=in_valid_i
     #pragma HLS INTERFACE ap_none port=quotient
@@ -29,25 +33,9 @@ void divider(
     in_ready_o = !valid_internal;
 
     if (in_valid_i && in_ready_o) {
-        // Perform fixed-point division (scaled by 2^3 = 8)
-        // ap_int<16> lhs_ext = lhs;
-        // ap_int<16> rhs_ext = rhs;
-        // ap_int<16> dividend = lhs_ext << 3; // shift left to align fixed-point, I believe this may be a mistake
-        // ap_int<16> divisor = rhs;
-        // ap_int<16> quotient_ext = dividend / divisor;
-        // result = quotient_ext.range(7, 0);  // Truncate back to 8-bit
-
         // Vitis should be able to automatically figure out and handle this operation
-        result = lhs / rhs;
+        result = dividend_i / divisor_i;
         valid_internal = true;
-
-        // #ifndef __SYNTHESIS__
-        //     std::cout << "divider: lhs: " << lhs << ", rhs: " << rhs << "\n";
-        //     std::cout << "divider: lhs_ext: " << lhs_ext << ", rhs_ext: " << rhs_ext << "\n";
-        //     std::cout << "divider: dividend: " << dividend << "\n";
-        //     std::cout << "divider: quotient_ext: " << quotient_ext << "\n";
-        //     std::cout << "divider: result (8-bit): " << result << "\n";
-        // #endif
     }
 
     quotient = result;
