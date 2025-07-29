@@ -1,4 +1,5 @@
 #include <ap_int.h>
+#include <ap_fixed.h>
 
 // 1 sign + 4 integer + 3 fractional = 8 bits total
 typedef ap_fixed<8, 5> fixed8_t;
