@@ -13,7 +13,7 @@ void divider(
     fixed8_t divisor_i,
     bool     &in_ready_o,     // tells upstream "I'm ready to accept input"
     bool     in_valid_i,      // tells this module "upstream has valid input"
-    fixed8_t &quotient,
+    fixed8_t &quotient_o,
     bool     out_ready_i,     // tells this module "downstream is ready to accept output"
     bool     &out_valid_o     // tells downstream "I have valid output"
 ) {

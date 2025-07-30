@@ -16,7 +16,7 @@ void divider(
     fixed8_t divisor_i,
     bool     &in_ready_o,
     bool     in_valid_i,
-    fixed8_t &quotient,
+    fixed8_t &quotient_o,
     bool     out_ready_i,
     bool     &out_valid_o
 );
@@ -40,7 +40,7 @@ fixed8_t generate_random_fixed8_t() {
 }
 
 int main() {
-    fixed8_t dividend_i, divisor_i, quotient;
+    fixed8_t dividend_i, divisor_i, quotient_o;
     float expected_quotient;
 
     bool in_valid_i = true;
@@ -54,14 +54,14 @@ int main() {
         dividend_i = generate_random_fixed8_t();
         divisor_i = generate_random_fixed8_t();
         expected_quotient = dividend_i/divisor_i;
-        divider(dividend_i, divisor_i, in_ready_o, in_valid_i, quotient, out_ready_i, out_valid_o);
+        divider(dividend_i, divisor_i, in_ready_o, in_valid_i, quotient_o, out_ready_i, out_valid_o);
 
         std::cout << "Cycle " << cycle << ":\n";
         std::cout << "  dividend_i = " << dividend_i << "\n";
         std::cout << "  divisor_i = " << divisor_i << "\n";
         if (out_valid_o) {
             std::cout << "  Expected Result = " << expected_quotient << "\n";
-            std::cout << "  Divider Result = " << quotient;
+            std::cout << "  Divider Result = " << quotient_o;
         }
         std::cout << std::endl;
 

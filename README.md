@@ -5,6 +5,7 @@
 - Bug with Ready-Valid Interface
 - Will probably need to make things more generic for the divider, i.e. the fixed point format?
 - Need to try and figure out how to make sure that VHDL isn't generated
+- Maybe use AXI Ready_Valid Interface?
 
 ## Usage
 ```bash
