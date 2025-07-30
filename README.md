@@ -8,3 +8,9 @@
 
 ## Vivado HLS
 - Will be removed as from what I checked the pragma being used are essentially the same as what is being used in Vitis HLS
+
+To Run
+
+```bash
+vitis_hls -f script.tcl
+```
