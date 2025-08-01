@@ -43,7 +43,7 @@ void divider(
 
         if (divisor_raw == 0) {
             // Divide-by-zero handling
-            if (dividend_raw < 0)      temp_result = FixedPointMin;
+            if      (dividend_raw < 0) temp_result = FixedPointMin;
             else if (dividend_raw > 0) temp_result = FixedPointMax;
             else                       temp_result = 0;
         } else {
@@ -54,8 +54,13 @@ void divider(
             temp_result = *reinterpret_cast<fixed_t*>(&scaled_q);
 
             // Clamp to fixed-point range
-            if      (temp_result > FixedPointMax) temp_result = FixedPointMax;
-            else if (temp_result < FixedPointMin) temp_result = FixedPointMin;
+            // Should be doing here using quotient, like in rowwise_div.sv, however
+            // when attempted it was failing, but passing others so I'm doing something wrong
+            if      (quotient > FixedPointMax) temp_result = FixedPointMax;
+            else if (quotient < FixedPointMin) temp_result = FixedPointMin;
+
+            // if      (temp_result > FixedPointMax) temp_result = FixedPointMax;
+            // else if (temp_result < FixedPointMin) temp_result = FixedPointMin;
         }
 
         result = temp_result;
