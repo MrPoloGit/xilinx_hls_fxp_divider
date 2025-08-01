@@ -67,7 +67,7 @@ int main() {
             std::cout << "  Result:   " << quotient_o        << "\n";
             std::cout << "  Expected: " << expected_quotient << "\n"; 
         }
-        std::cout << "\n";
+        std::cout << std::endl;
     }
 
     return 0;
