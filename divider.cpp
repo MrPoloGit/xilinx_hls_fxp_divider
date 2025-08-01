@@ -29,33 +29,9 @@ void divider(
 
     static fixed_t result = 0;
     bool valid_internal;
-    // static bool valid_internal = false;
-
 
     in_ready_o = out_ready_i || !valid_internal;
 
-    // IMPLEMENTATION 1 ------------------------------------------------------------
-    // if (in_valid_i && in_ready_o) {
-    //     // Vitis should be able to automatically figure out and handle this operation
-    //     result = dividend_i / divisor_i;
-
-    //     valid_internal = true;
-    // static bool valid_internal = false;
-
-    // }
-
-    // if (ext_divisor == 0) {
-    //     if      (ext_dividend < 0) result = FixedPointMin;
-    //     else if (ext_dividend > 0) result = FixedPointMax;
-    //     else                       result = 0;
-    // } else if (result > FixedPointMax) {
-    //     result = FixedPointMax;
-    // } else if (result < FixedPointMin) {
-    //     result = FixedPointMin;
-    // }
-    // -----------------------------------------------------------------------------
-
-    // IMPLEMENTATION 2 ------------------------------------------------------------
     if (in_valid_i && in_ready_o) {
         ap_int<8> dividend_raw = *reinterpret_cast<ap_int<8>*>(&dividend_i);
         ap_int<8> divisor_raw  = *reinterpret_cast<ap_int<8>*>(&divisor_i);
@@ -73,27 +49,18 @@ void divider(
         } else {
             ap_int<16> numerator = ext_dividend << 3;  // Shift left to preserve fractional bits
             ap_int<16> quotient  = numerator / ext_divisor;
+            ap_int<8>  scaled_q  = quotient;
 
-            // Extract bits [11:4] = 8-bit result with 3 fraction bits
-            // ap_int<16> quantized_result = quotient.range(10, 3);
-
-            // ap_int<16> quantized_result = quotient >> 3;
-            // ap_int<8>  right_part       = quantized_result.range(10,3);
-
-            ap_int<8> right_part = quotient;
-
-            // Cast back to fixed-point type
-            temp_result = *reinterpret_cast<fixed_t*>(&right_part);
+            temp_result = *reinterpret_cast<fixed_t*>(&scaled_q);
 
             // Clamp to fixed-point range
-            if (temp_result > FixedPointMax)      temp_result = FixedPointMax;
+            if      (temp_result > FixedPointMax) temp_result = FixedPointMax;
             else if (temp_result < FixedPointMin) temp_result = FixedPointMin;
         }
 
         result = temp_result;
         valid_internal = true;
     }
-    // ----------------------------------------------------------------------
 
     quotient_o = result;
     out_valid_o = valid_internal;
