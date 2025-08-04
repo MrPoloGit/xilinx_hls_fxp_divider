@@ -2,7 +2,7 @@
 #include <ap_fixed.h>
 
 // 1 sign + 4 integer + 3 fractional = 8 bits total
-typedef ap_fixed<8, 5> fixed_t;
+typedef ap_fixed<8, 5, AP_TRN, AP_WRAP> fixed_t;
 static ap_int<8> raw_min = 0b10000000; 
 static ap_int<8> raw_max = 0b01111111;
 static fixed_t FixedPointMin = *reinterpret_cast<fixed_t*>(&raw_min); // -16.0
@@ -33,6 +33,7 @@ void divider(
     in_ready_o = out_ready_i || !valid_internal;
 
     if (in_valid_i && in_ready_o) {
+        std::cout << "divider.cpp" << "\n";
         ap_int<8> dividend_raw = *reinterpret_cast<ap_int<8>*>(&dividend_i);
         ap_int<8> divisor_raw  = *reinterpret_cast<ap_int<8>*>(&divisor_i);
 
@@ -41,23 +42,39 @@ void divider(
 
         fixed_t temp_result = 0;
 
-        if (divisor_raw == 0) {
+        std::cout << "  Pre Division:\n";
+        std::cout << "      dividend_i:   " << dividend_i   << "\n";
+        std::cout << "      divisor_i:    " << divisor_i    << "\n";
+        std::cout << "      dividend_raw: " << dividend_raw << "\n";
+        std::cout << "      divisor_raw:  " << divisor_raw  << "\n";
+        std::cout << "      ext_dividend: " << ext_dividend << "\n";
+        std::cout << "      ext_divisor:  " << ext_divisor  << "\n";
+
+        if (divisor_i == fixed_t(0)) {
             // Divide-by-zero handling
-            if      (dividend_raw < 0) temp_result = FixedPointMin;
-            else if (dividend_raw > 0) temp_result = FixedPointMax;
-            else                       temp_result = 0;
+            if      (dividend_i < fixed_t(0)) temp_result = FixedPointMin;
+            else if (dividend_i > fixed_t(0)) temp_result = FixedPointMax;
+            else                              temp_result = fixed_t(0);
+            
+            std::cout << "  Division by zero detected, result: " << temp_result << "\n";
         } else {
             ap_int<16> numerator = ext_dividend << 3;  // Shift left to preserve fractional bits
             ap_int<16> quotient  = numerator / ext_divisor;
             ap_int<8>  scaled_q  = quotient;
-
-            temp_result = *reinterpret_cast<fixed_t*>(&scaled_q);
+            fixed_t test_q = fixed_t(quotient);
 
             // Clamp to fixed-point range
             // Should be doing here using quotient, like in rowwise_div.sv, however
             // when attempted it was failing, but passing others so I'm doing something wrong
-            if      (quotient > FixedPointMax) temp_result = FixedPointMax;
-            else if (quotient < FixedPointMin) temp_result = FixedPointMin;
+            if      (test_q > FixedPointMax) temp_result = FixedPointMax;
+            else if (test_q < FixedPointMin) temp_result = FixedPointMin;
+            else    temp_result = *reinterpret_cast<fixed_t*>(&scaled_q);
+
+            std::cout << "  After Division:\n";
+            std::cout << "      numerator:   " << numerator   << "\n";
+            std::cout << "      quotient:    " << quotient    << "\n";
+            std::cout << "      scaled_q:    " << scaled_q    << "\n";
+            std::cout << "      temp_result: " << temp_result << "\n";
 
             // if      (temp_result > FixedPointMax) temp_result = FixedPointMax;
             // else if (temp_result < FixedPointMin) temp_result = FixedPointMin;
