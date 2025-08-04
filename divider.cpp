@@ -4,6 +4,7 @@
 
 // 1 sign + 4 integer + 3 fractional = 8 bits total
 typedef ap_fixed<8, 5, AP_TRN, AP_SAT> fixed_t;
+// Not sure why limits isn't working for this
 static ap_int<8> raw_min = 0b10000000; 
 static ap_int<8> raw_max = 0b01111111;
 static fixed_t FixedPointMin = *reinterpret_cast<fixed_t*>(&raw_min); // -16.0
@@ -28,50 +29,21 @@ void divider(
     #pragma HLS INTERFACE ap_ctrl_none port=return
     #pragma HLS PIPELINE II=1
 
-    static fixed_t result = 0;
+    fixed_t result = 0;
     bool valid_internal;
 
     in_ready_o = out_ready_i || !valid_internal;
 
     if (in_valid_i && in_ready_o) {
-        std::cout << "divider.cpp" << "\n";
-        ap_int<8> dividend_raw = *reinterpret_cast<ap_int<8>*>(&dividend_i);
-        ap_int<8> divisor_raw  = *reinterpret_cast<ap_int<8>*>(&divisor_i);
-
-        ap_int<16> ext_dividend = dividend_raw;
-        ap_int<16> ext_divisor  = divisor_raw;
-
-        fixed_t temp_result = 0;
-
-        std::cout << "  Pre Division:\n";
-        std::cout << "      dividend_i:   " << dividend_i   << "\n";
-        std::cout << "      divisor_i:    " << divisor_i    << "\n";
-        std::cout << "      dividend_raw: " << dividend_raw << "\n";
-        std::cout << "      divisor_raw:  " << divisor_raw  << "\n";
-        std::cout << "      ext_dividend: " << ext_dividend << "\n";
-        std::cout << "      ext_divisor:  " << ext_divisor  << "\n";
-
         if (divisor_i == fixed_t(0)) {
             // Divide-by-zero handling
-            if      (dividend_i < fixed_t(0)) temp_result = FixedPointMin;
-            else if (dividend_i > fixed_t(0)) temp_result = FixedPointMax;
-            else                              temp_result = fixed_t(0);
-            
-            std::cout << "  Division by zero detected, result: " << temp_result << "\n";
+            if      (dividend_i < fixed_t(0)) result = FixedPointMin;
+            else if (dividend_i > fixed_t(0)) result = FixedPointMax;
         } else {
-            // Perform division directly with fixed_t types
             // The ap_fixed library handles the scaling automatically
-            temp_result = dividend_i / divisor_i;
-            
-            // Clamp to valid range
-            if      (temp_result > FixedPointMax) temp_result = FixedPointMax;
-            else if (temp_result < FixedPointMin) temp_result = FixedPointMin;
-
-            std::cout << "  After Division:\n";
-            std::cout << "      temp_result: " << temp_result << "\n";
+            result = dividend_i / divisor_i;
         }
 
-        result = temp_result;
         valid_internal = true;
     }
 

@@ -7,6 +7,7 @@
 
 // 1 sign + 4 integer + 3 fractional = 8 bits total
 typedef ap_fixed<8, 5, AP_TRN, AP_SAT> fixed_t;
+// Not sure why limits isn't working for this
 static ap_int<8> raw_min = 0b10000000; 
 static ap_int<8> raw_max = 0b01111111;
 static fixed_t FixedPointMin = *reinterpret_cast<fixed_t*>(&raw_min); // -16.0
@@ -76,7 +77,7 @@ int main() {
         std::cout << std::endl;
     }
 
-    // Specific Unique Test Cases
+    // Specific Test Cases
     std::vector<test_case> tests = {
         {7.75,    0.125,  15.875, "Same sign overflow check"},
         {10.125,  -0.125, -16,    "Different sign overflow check"},
