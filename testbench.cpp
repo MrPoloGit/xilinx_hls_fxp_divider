@@ -6,7 +6,7 @@
 #include <vector>
 
 // 1 sign + 4 integer + 3 fractional = 8 bits total
-typedef ap_fixed<8, 5, AP_TRN, AP_WRAP> fixed_t;
+typedef ap_fixed<8, 5, AP_TRN, AP_SAT> fixed_t;
 static ap_int<8> raw_min = 0b10000000; 
 static ap_int<8> raw_max = 0b01111111;
 static fixed_t FixedPointMin = *reinterpret_cast<fixed_t*>(&raw_min); // -16.0
@@ -66,7 +66,7 @@ int main() {
         divider(dividend_i, divisor_i, in_ready_o, in_valid_i, quotient_o, out_ready_i, out_valid_o);
 
         if (out_valid_o) {
-            if (expected_quotient != quotient_o) {
+            if (expected_quotient != (float)quotient_o) {
                 std::cout << "  NOT EQUAL   " << "\n";
                 std::cout << "  Result:   " << quotient_o        << "\n";
                 std::cout << "  Expected: " << expected_quotient << "\n"; 
@@ -99,7 +99,13 @@ int main() {
         dividend_i = tests[i].dividend;
         divisor_i  = tests[i].divisor;
         in_valid_i = true;
-        expected_quotient = dividend_i/divisor_i;
+        if (divisor_i == fixed_t(0)) {
+            expected_quotient = 0;
+        } else {
+            expected_quotient = dividend_i/divisor_i;
+            if      (expected_quotient > (float)FixedPointMax) expected_quotient = (float)FixedPointMax;
+            else if (expected_quotient < (float)FixedPointMin) expected_quotient = (float)FixedPointMin;
+        }
         divider(dividend_i, divisor_i, in_ready_o, in_valid_i, quotient_o, out_ready_i, out_valid_o);
 
         if (out_valid_o) {
@@ -115,5 +121,6 @@ int main() {
         std::cout << std::endl;
     }
 
+    std::cout << "FINISHED TEST BENCH" << std::endl;
     return 0;
 }

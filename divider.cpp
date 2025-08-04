@@ -1,8 +1,9 @@
+#include <iostream>
 #include <ap_int.h>
 #include <ap_fixed.h>
 
 // 1 sign + 4 integer + 3 fractional = 8 bits total
-typedef ap_fixed<8, 5, AP_TRN, AP_WRAP> fixed_t;
+typedef ap_fixed<8, 5, AP_TRN, AP_SAT> fixed_t;
 static ap_int<8> raw_min = 0b10000000; 
 static ap_int<8> raw_max = 0b01111111;
 static fixed_t FixedPointMin = *reinterpret_cast<fixed_t*>(&raw_min); // -16.0
@@ -58,26 +59,16 @@ void divider(
             
             std::cout << "  Division by zero detected, result: " << temp_result << "\n";
         } else {
-            ap_int<16> numerator = ext_dividend << 3;  // Shift left to preserve fractional bits
-            ap_int<16> quotient  = numerator / ext_divisor;
-            ap_int<8>  scaled_q  = quotient;
-            fixed_t test_q = fixed_t(quotient);
-
-            // Clamp to fixed-point range
-            // Should be doing here using quotient, like in rowwise_div.sv, however
-            // when attempted it was failing, but passing others so I'm doing something wrong
-            if      (test_q > FixedPointMax) temp_result = FixedPointMax;
-            else if (test_q < FixedPointMin) temp_result = FixedPointMin;
-            else    temp_result = *reinterpret_cast<fixed_t*>(&scaled_q);
+            // Perform division directly with fixed_t types
+            // The ap_fixed library handles the scaling automatically
+            temp_result = dividend_i / divisor_i;
+            
+            // Clamp to valid range
+            if      (temp_result > FixedPointMax) temp_result = FixedPointMax;
+            else if (temp_result < FixedPointMin) temp_result = FixedPointMin;
 
             std::cout << "  After Division:\n";
-            std::cout << "      numerator:   " << numerator   << "\n";
-            std::cout << "      quotient:    " << quotient    << "\n";
-            std::cout << "      scaled_q:    " << scaled_q    << "\n";
             std::cout << "      temp_result: " << temp_result << "\n";
-
-            // if      (temp_result > FixedPointMax) temp_result = FixedPointMax;
-            // else if (temp_result < FixedPointMin) temp_result = FixedPointMin;
         }
 
         result = temp_result;
