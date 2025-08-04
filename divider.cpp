@@ -29,16 +29,17 @@ void divider(
     #pragma HLS INTERFACE ap_ctrl_none port=return
     #pragma HLS PIPELINE II=1
 
-    fixed_t result = 0;
-    bool valid_internal;
+    static fixed_t result = 0;
+    static bool valid_internal = false;
 
-    in_ready_o = out_ready_i || !valid_internal;
+    in_ready_o = !valid_internal;
 
     if (in_valid_i && in_ready_o) {
         if (divisor_i == fixed_t(0)) {
             // Divide-by-zero handling
             if      (dividend_i < fixed_t(0)) result = FixedPointMin;
             else if (dividend_i > fixed_t(0)) result = FixedPointMax;
+            else                              result = fixed_t(0);    // Redundant TBH
         } else {
             // The ap_fixed library handles the scaling automatically
             result = dividend_i / divisor_i;

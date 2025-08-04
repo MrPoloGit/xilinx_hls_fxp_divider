@@ -46,23 +46,31 @@ int main() {
     float expected_quotient;
 
     // Standard Random Test
+    std::cout << "STANDARD RANDOM TEST" << std::endl;
     const int num_tests = 60;
     for (int i = 0; i < num_tests; i++) {
         std::cout << "Test: " << i << "\n";
         // Pre set up
-        dividend_i = 0;
-        divisor_i = 1;
-        in_valid_i = false;
+        dividend_i  = 0;
+        divisor_i   = 1;
+        in_valid_i  = false;
+        out_ready_i = true;
         divider(dividend_i, divisor_i, in_ready_o, in_valid_i, quotient_o, out_ready_i, out_valid_o);
         
         // Input valid information
-        dividend_i = generate_random_fixed_t();
-        divisor_i = generate_random_fixed_t();
-        in_valid_i = true;
-
-        expected_quotient = dividend_i/divisor_i;
-        if      (expected_quotient > (float)FixedPointMax) expected_quotient = (float)FixedPointMax;
-        else if (expected_quotient < (float)FixedPointMin) expected_quotient = (float)FixedPointMin;
+        dividend_i  = generate_random_fixed_t();
+        divisor_i   = generate_random_fixed_t();
+        in_valid_i  = true;
+        out_ready_i = true;
+        if (divisor_i == fixed_t(0)) {
+            if      (dividend_i < fixed_t(0)) expected_quotient = (float)FixedPointMin;
+            else if (dividend_i > fixed_t(0)) expected_quotient = (float)FixedPointMax;
+            else                              expected_quotient = (float)0;
+        } else {
+            expected_quotient = dividend_i/divisor_i;
+            if      (expected_quotient < (float)FixedPointMin) expected_quotient = (float)FixedPointMin;
+            else if (expected_quotient > (float)FixedPointMax) expected_quotient = (float)FixedPointMax;
+        }
 
         divider(dividend_i, divisor_i, in_ready_o, in_valid_i, quotient_o, out_ready_i, out_valid_o);
 
@@ -78,6 +86,7 @@ int main() {
     }
 
     // Specific Test Cases
+    std::cout << "SPECIFIC TEST CASES" << std::endl;
     std::vector<test_case> tests = {
         {7.75,    0.125,  15.875, "Same sign overflow check"},
         {10.125,  -0.125, -16,    "Different sign overflow check"},
@@ -91,33 +100,36 @@ int main() {
     for (size_t i = 0; i < tests.size(); i++) {
         std::cout << "Test: " << i << "\n";
         // Pre set up
-        dividend_i = 0;
-        divisor_i = 1;
-        in_valid_i = false;
+        dividend_i  = 0;
+        divisor_i   = 1;
+        in_valid_i  = false;
+        out_ready_i = true;
         divider(dividend_i, divisor_i, in_ready_o, in_valid_i, quotient_o, out_ready_i, out_valid_o);
         
         // Input valid information
-        dividend_i = tests[i].dividend;
-        divisor_i  = tests[i].divisor;
-        in_valid_i = true;
+        dividend_i  = tests[i].dividend;
+        divisor_i   = tests[i].divisor;
+        in_valid_i  = true;
+        out_ready_i = true;
         if (divisor_i == fixed_t(0)) {
-            expected_quotient = 0;
+            if      (dividend_i < fixed_t(0)) expected_quotient = (float)FixedPointMin;
+            else if (dividend_i > fixed_t(0)) expected_quotient = (float)FixedPointMax;
+            else                              expected_quotient = (float)0;
         } else {
             expected_quotient = dividend_i/divisor_i;
-            if      (expected_quotient > (float)FixedPointMax) expected_quotient = (float)FixedPointMax;
-            else if (expected_quotient < (float)FixedPointMin) expected_quotient = (float)FixedPointMin;
+            if      (expected_quotient < (float)FixedPointMin) expected_quotient = (float)FixedPointMin;
+            else if (expected_quotient > (float)FixedPointMax) expected_quotient = (float)FixedPointMax;
         }
         divider(dividend_i, divisor_i, in_ready_o, in_valid_i, quotient_o, out_ready_i, out_valid_o);
 
         if (out_valid_o) {
             if (tests[i].expected_result != quotient_o) {
                 std::cout << "  NOT EQUAL   " << "\n";
-                std::cout << "  Dividend: " << dividend_i            << "\n";
-                std::cout << "  Divisor:  " << divisor_i             << "\n";
-                std::cout << "  Result:   " << quotient_o            << "\n";
-                std::cout << "  Expected: " << tests[i].expected_result << "\n"; 
             }
-            
+            std::cout << "  Dividend: " << dividend_i               << "\n";
+            std::cout << "  Divisor:  " << divisor_i                << "\n";
+            std::cout << "  Result:   " << quotient_o               << "\n";
+            std::cout << "  Expected: " << tests[i].expected_result << "\n"; 
         }
         std::cout << std::endl;
     }
