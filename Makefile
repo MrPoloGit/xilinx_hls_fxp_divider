@@ -2,9 +2,7 @@ PROJECT_DIR := synthesis_result
 SCRIPT      := script.tcl
 LOG         := vitis_hls.log
 
-.PHONY: all build clean
-
-all: build
+.PHONY: build clean
 
 build:
 	vitis_hls -f $(SCRIPT) | tee $(LOG)

@@ -1,15 +1,17 @@
 # High level synthesis used to generate pipelined fixed pointed divider
-## Vitis HLS
-- Need to complete testbench, with more tests
-- Bug with to be able to handle too larger or smaller numbers
-- Bug with Ready-Valid Interface
-- Will probably need to make things more generic for the divider, i.e. the fixed point format?
-- Need to try and figure out how to make sure that VHDL isn't generated
-- Maybe use AXI Ready_Valid Interface?
+## Notes
+- Verilog code is in synthesis_result/solution1/syn/verilog/
+- Seemed to have fixed issue with incorrect values
+- will try AXI interface tomorrow
 
 ## Usage
+- In home directory
 ```bash
-vitis_hls -f script.tcl
+source /mada/software/Xilinx/Vitis/2023.1/settings64.sh
+source /opt/xilinx/xrt/setup.sh
 ```
-
-- Verilog code is in synthesis_result/solution1/syn/verilog/
+- At project root
+```bash
+make build
+make clean
+```
