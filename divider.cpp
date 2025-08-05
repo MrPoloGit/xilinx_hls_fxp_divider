@@ -5,10 +5,20 @@
 // 1 sign + 4 integer + 3 fractional = 8 bits total
 typedef ap_fixed<8, 5, AP_TRN, AP_SAT> fixed_t;
 // Not sure why limits isn't working for this
-static ap_int<8> raw_min = 0b10000000; 
-static ap_int<8> raw_max = 0b01111111;
-static fixed_t FixedPointMin = *reinterpret_cast<fixed_t*>(&raw_min); // -16.0
-static fixed_t FixedPointMax = *reinterpret_cast<fixed_t*>(&raw_max); // 15.875
+static fixed_t FixedPointMin = fixed_t(-16.0);
+static fixed_t FixedPointMax = fixed_t(15.875);
+
+fixed_t safe_division(fixed_t dividend, fixed_t divisor) {
+    #pragma HLS INLINE
+
+    fixed_t safe_divisor = (divisor == 0) ? fixed_t(1) : divisor;
+    fixed_t result = dividend / safe_divisor;
+
+    if (divisor == 0) {
+        result = (dividend >= 0) ? FixedPointMax : FixedPointMin;
+    }
+    return result;
+}
 
 void divider(
     fixed_t dividend_i,
@@ -35,15 +45,7 @@ void divider(
     in_ready_o = out_ready_i || !valid_internal;
 
     if (in_valid_i && in_ready_o) {
-        if (divisor_i == fixed_t(0)) {
-            // Divide-by-zero handling
-            if      (dividend_i < fixed_t(0)) result = FixedPointMin;
-            else if (dividend_i > fixed_t(0)) result = FixedPointMax;
-        } else {
-            // The ap_fixed library handles the scaling automatically
-            result = dividend_i / divisor_i;
-        }
-
+        result = safe_division(dividend_i, divisor_i);
         valid_internal = true;
     }
 

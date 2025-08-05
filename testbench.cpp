@@ -125,11 +125,12 @@ int main() {
         if (out_valid_o) {
             if (tests[i].expected_result != quotient_o) {
                 std::cout << "  NOT EQUAL   " << "\n";
+                std::cout << "  Dividend: " << dividend_i               << "\n";
+                std::cout << "  Divisor:  " << divisor_i                << "\n";
+                std::cout << "  Result:   " << quotient_o               << "\n";
+                std::cout << "  Expected: " << tests[i].expected_result << "\n"; 
             }
-            std::cout << "  Dividend: " << dividend_i               << "\n";
-            std::cout << "  Divisor:  " << divisor_i                << "\n";
-            std::cout << "  Result:   " << quotient_o               << "\n";
-            std::cout << "  Expected: " << tests[i].expected_result << "\n"; 
+
         }
         std::cout << std::endl;
     }
