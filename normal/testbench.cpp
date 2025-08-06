@@ -4,12 +4,7 @@
 #include <ap_int.h>
 #include <ap_fixed.h>
 #include <vector>
-
-// 1 sign + 4 integer + 3 fractional = 8 bits total
-typedef ap_fixed<8, 5, AP_TRN, AP_SAT> fixed_t;
-// Not sure why limits isn't working for this
-static fixed_t FixedPointMin = fixed_t(-16.0);
-static fixed_t FixedPointMax = fixed_t(15.875);
+#include "divider.h"
 
 struct test_case {
     fixed_t dividend;
@@ -17,16 +12,6 @@ struct test_case {
     fixed_t expected_result;
     std::string description;
 };
-
-void divider(
-    fixed_t dividend_i,
-    fixed_t divisor_i,
-    bool    &in_ready_o,
-    bool    in_valid_i,
-    fixed_t &quotient_o,
-    bool    out_ready_i,
-    bool    &out_valid_o
-);
 
 fixed_t generate_random_fixed_t() {
     uint8_t raw = static_cast<uint8_t>(rand() % 256);
@@ -80,8 +65,8 @@ int main() {
             }
             
         }
-        std::cout << std::endl;
     }
+    std::cout << std::endl;
 
     // Specific Test Cases
     std::cout << "SPECIFIC TEST CASES" << std::endl;
@@ -130,8 +115,8 @@ int main() {
             }
 
         }
-        std::cout << std::endl;
     }
+    std::cout << std::endl;
 
     std::cout << "FINISHED TEST BENCH" << std::endl;
     return 0;

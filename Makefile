@@ -1,5 +1,10 @@
-.PHONY: normal axi_1 axi_2 clean
+.PHONY: all normal axi_1 axi_2 clean
 
+all:
+	make normal
+	make axi_1
+	make axi_2
+	
 normal:
 	vitis_hls -f normal/normal.tcl | tee vitis_hls_normal.log
 

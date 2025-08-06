@@ -65,8 +65,8 @@ int main() {
             }
 
         }
-        std::cout << std::endl;
     }
+    std::cout << std::endl;
 
     std::cout << "SPECIFIC TEST CASES" << std::endl;
     std::vector<test_case> tests = {
@@ -106,7 +106,10 @@ int main() {
                 std::cout << "  PASS\n";
             }
         }
-        std::cout << std::endl;    
+        
     }
+    std::cout << std::endl;
+
+    std::cout << "FINISHED TEST BENCH" << std::endl;
     return 0;
 }

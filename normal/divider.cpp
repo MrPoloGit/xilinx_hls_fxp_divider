@@ -1,12 +1,5 @@
 #include <iostream>
-#include <ap_int.h>
-#include <ap_fixed.h>
-
-// 1 sign + 4 integer + 3 fractional = 8 bits total
-typedef ap_fixed<8, 5, AP_TRN, AP_SAT> fixed_t;
-// Not sure why limits isn't working for this
-static fixed_t FixedPointMin = fixed_t(-16.0);
-static fixed_t FixedPointMax = fixed_t(15.875);
+#include "divider.h"
 
 // fixed_t safe_division(fixed_t dividend, fixed_t divisor) {
 //     #pragma HLS INLINE
