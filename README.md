@@ -13,6 +13,9 @@ source /opt/xilinx/xrt/setup.sh
 ```
 - At project root
 ```bash
+# Builds all versions
+make all
+
 # Build normal version
 make normal
 
