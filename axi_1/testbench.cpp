@@ -5,7 +5,7 @@
 #include <ap_int.h>
 #include <ap_fixed.h>
 #include <vector>
-#include "divider_axi.h"
+#include "divider_axi_1.h"
 
 struct test_case {
     fixed_t dividend;
@@ -48,7 +48,7 @@ int main() {
         in_val.last = 1;
         in_stream.write(in_val);
 
-        divider_axi(in_stream, out_stream);
+        divider_axi_1(in_stream, out_stream);
 
         std::cout << "TEST " << i+1 << ": ";
         if (!out_stream.empty()) {
@@ -90,7 +90,7 @@ int main() {
         in_val.last = 1;
         in_stream.write(in_val);
 
-        divider_axi(in_stream, out_stream);
+        divider_axi_1(in_stream, out_stream);
 
         std::cout << "TEST " << i+1 << ": ";
         if (!out_stream.empty()) {

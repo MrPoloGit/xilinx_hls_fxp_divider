@@ -1,4 +1,4 @@
-#include "divider_axi.h"
+#include "divider_axi_2.h"
 
 // Safe division with saturation
 // fixed_t safe_division(fixed_t dividend, fixed_t divisor) {
@@ -66,8 +66,8 @@ static void write_outputs(hls::stream<fixed_t> &result_fifo,
 }
 
 // Top-level AXI divider
-void divider_axi(hls::stream<axis_in_t>  &s_axis,
-                 hls::stream<axis_out_t> &m_axis) {
+void divider_axi_2(hls::stream<axis_in_t>  &s_axis,
+                   hls::stream<axis_out_t> &m_axis) {
     #pragma HLS INTERFACE axis       port=s_axis
     #pragma HLS INTERFACE axis       port=m_axis
     #pragma HLS INTERFACE ap_ctrl_none port=return

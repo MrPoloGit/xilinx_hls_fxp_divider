@@ -1,6 +1,6 @@
 open_project synthesis_result_axi_1
-set_top divider_axi
-add_files axi_1/divider_axi.cpp
+set_top divider_axi_1
+add_files axi_1/divider_axi_1.cpp
 add_files -tb axi_1/testbench.cpp -cflags "-Wno-unknown-pragmas"
 open_solution "solution1"
 

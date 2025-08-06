@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <bitset>
 #include <vector>
-#include "divider_axi.h"
+#include "divider_axi_2.h"
 
 struct test_case {
     fixed_t dividend;
@@ -24,7 +24,7 @@ void run_and_drain(hls::stream<axis_in_t> &in_stream,
                    std::vector<fixed_t> &results) {
     // Flush the pipeline by calling the design enough times
     for (int i = 0; i < flush_count; i++) {
-        divider_axi(in_stream, out_stream);
+        divider_axi_2(in_stream, out_stream);
         if (!out_stream.empty()) {
             axis_out_t out_val = out_stream.read();
             results.push_back(*reinterpret_cast<fixed_t*>(&out_val.data));
@@ -128,6 +128,7 @@ int main() {
         }
     }
     std::cout << std::endl;
-
+    
+    std::cout << "FINISHED TEST BENCH" << std::endl;
     return 0;
 }

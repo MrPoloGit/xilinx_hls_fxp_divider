@@ -1,4 +1,4 @@
-#include "divider_axi.h"
+#include "divider_axi_1.h"
 
 // fixed_t safe_division(fixed_t dividend, fixed_t divisor) {
 //     #pragma HLS INLINE
@@ -22,7 +22,7 @@ fixed_t safe_division(fixed_t dividend, fixed_t divisor) {
     return dividend / divisor;
 }
 
-void divider_axi(hls::stream<axis_in_t>  &s_axis,
+void divider_axi_1(hls::stream<axis_in_t>  &s_axis,
                  hls::stream<axis_out_t> &m_axis) {
     #pragma HLS INTERFACE axis       port=s_axis
     #pragma HLS INTERFACE axis       port=m_axis

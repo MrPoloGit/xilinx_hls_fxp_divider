@@ -14,9 +14,9 @@ struct axis_in_t {
 };
 
 struct axis_out_t {
-    ap_int<8>  data;  
+    ap_int<8>  data;
     ap_uint<1> last;
 };
 
-void divider_axi(hls::stream<axis_in_t>  &s_axis,
-                 hls::stream<axis_out_t> &m_axis);
+void divider_axi_1(hls::stream<axis_in_t>  &s_axis,
+                   hls::stream<axis_out_t> &m_axis);
