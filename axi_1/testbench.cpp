@@ -27,7 +27,7 @@ int main() {
 
     std::cout << "GENERAL RANDOM TEST CASES" << std::endl;
     int num_tests = 100;
-    for (int i = 1; i <= num_tests; i++){
+    for (int i = 0; i < num_tests; i++){
         fixed_t dividend = generate_random_fixed_t();
         fixed_t divisor  = generate_random_fixed_t();
         float expected_result;
@@ -50,20 +50,22 @@ int main() {
 
         divider_axi(in_stream, out_stream);
 
-        std::cout << "TEST " << i << ": ";
+        std::cout << "TEST " << i+1 << ": ";
         if (!out_stream.empty()) {
-            std::cout << "Valid Output\n";
             axis_out_t out_val = out_stream.read();
             fixed_t result = *reinterpret_cast<fixed_t*>(&out_val.data);
             if (expected_result != (float)result) {
                 std::cout << "  NOT EQUAL\n";
+                std::cout << "  Dividend  " << dividend        << "\n";
+                std::cout << "  Divisor   " << divisor         << "\n";
+                std::cout << "  Result:   " << result          << "\n";
+                std::cout << "  Expected: " << expected_result << "\n";
+            } else {
+                std::cout << "  PASS\n";
             }
-            std::cout << "  Dividend  " << dividend          << "\n";
-            std::cout << "  Divisor   " << divisor           << "\n";
-            std::cout << "  Result:   " << result            << "\n";
-            std::cout << "  Expected: " << expected_result << "\n";
+
         }
-        std::cout << "\n";
+        std::cout << std::endl;
     }
 
     std::cout << "SPECIFIC TEST CASES" << std::endl;
@@ -77,7 +79,7 @@ int main() {
         {-14.875, -0.875, 15.875, "Divisor is negative, Divisor is negative, result is FixedPointMax"}
     };
 
-    for (size_t i = 1; i <= tests.size(); i++) {
+    for (size_t i = 0; i < tests.size(); i++) {
         fixed_t dividend          = tests[i].dividend;
         fixed_t divisor           = tests[i].divisor;
         fixed_t expected_result = tests[i].expected_result;
@@ -90,21 +92,21 @@ int main() {
 
         divider_axi(in_stream, out_stream);
 
-        std::cout << "TEST " << i << ": ";
+        std::cout << "TEST " << i+1 << ": ";
         if (!out_stream.empty()) {
-            std::cout << "Valid Output\n";
             axis_out_t out_val = out_stream.read();
             fixed_t result = *reinterpret_cast<fixed_t*>(&out_val.data);
             if (expected_result != result) {
                 std::cout << "  NOT EQUAL\n";
+                std::cout << "  Dividend  " << dividend          << "\n";
+                std::cout << "  Divisor   " << divisor           << "\n";
+                std::cout << "  Result:   " << result            << "\n";
+                std::cout << "  Expected: " << expected_result << "\n";
+            } else {
+                std::cout << "  PASS\n";
             }
-            std::cout << "  Dividend  " << dividend          << "\n";
-            std::cout << "  Divisor   " << divisor           << "\n";
-            std::cout << "  Result:   " << result            << "\n";
-            std::cout << "  Expected: " << expected_result << "\n";
         }
-        std::cout << "\n";
-    
+        std::cout << std::endl;    
     }
     return 0;
 }

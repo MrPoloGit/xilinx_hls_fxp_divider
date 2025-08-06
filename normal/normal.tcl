@@ -1,7 +1,7 @@
-open_project synthesis_result
-set_top divider_axi
-add_files divider_axi.cpp
-add_files -tb testbench.cpp -cflags "-Wno-unknown-pragmas"
+open_project synthesis_result_normal
+set_top divider
+add_files normal/divider.cpp
+add_files -tb normal/testbench.cpp -cflags "-Wno-unknown-pragmas"
 open_solution "solution1"
 
 # Specify the target FPGA

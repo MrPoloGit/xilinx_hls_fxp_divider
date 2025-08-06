@@ -1,15 +1,25 @@
 #include "divider_axi.h"
 
+// fixed_t safe_division(fixed_t dividend, fixed_t divisor) {
+//     #pragma HLS INLINE
+
+//     fixed_t safe_divisor = (divisor == fixed_t(0)) ? fixed_t(1) : divisor;
+//     fixed_t result = dividend / safe_divisor;
+
+//     if (divisor == fixed_t(0)) {
+//         result = (dividend >= fixed_t(0)) ? FixedPointMax : FixedPointMin;
+//     }
+//     return result;
+// }
+
 fixed_t safe_division(fixed_t dividend, fixed_t divisor) {
     #pragma HLS INLINE
-
-    fixed_t safe_divisor = (divisor == 0) ? fixed_t(1) : divisor;
-    fixed_t result = dividend / safe_divisor;
-
-    if (divisor == 0) {
-        result = (dividend >= 0) ? FixedPointMax : FixedPointMin;
+    if (divisor == fixed_t(0)) {
+        if (dividend > fixed_t(0)) return FixedPointMax;
+        if (dividend < fixed_t(0)) return FixedPointMin;
+        return fixed_t(0);
     }
-    return result;
+    return dividend / divisor;
 }
 
 void divider_axi(hls::stream<axis_in_t>  &s_axis,

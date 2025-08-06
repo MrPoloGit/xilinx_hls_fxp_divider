@@ -5,7 +5,6 @@
 
 typedef ap_fixed<8, 5, AP_TRN, AP_SAT> fixed_t;
 
-// Define constants directly in the header (inline avoids multiple-definition errors)
 const fixed_t FixedPointMin = fixed_t(-16.0);
 const fixed_t FixedPointMax = fixed_t(15.875);
 
@@ -15,7 +14,7 @@ struct axis_in_t {
 };
 
 struct axis_out_t {
-    ap_int<8>  data;  // result in ap_fixed<8,5> format
+    ap_int<8>  data;  
     ap_uint<1> last;
 };
 

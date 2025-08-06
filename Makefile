@@ -1,11 +1,13 @@
-PROJECT_DIR := synthesis_result
-SCRIPT      := script.tcl
-LOG         := vitis_hls.log
+.PHONY: normal axi_1 axi_2 clean
 
-.PHONY: build clean
+normal:
+	vitis_hls -f normal/normal.tcl | tee vitis_hls_normal.log
 
-build:
-	vitis_hls -f $(SCRIPT) | tee $(LOG)
+axi_1:
+	vitis_hls -f axi_1/axi_1.tcl | tee vitis_hls_axi_1.log
+
+axi_2:
+	vitis_hls -f axi_2/axi_2.tcl | tee vitis_hls_axi_2.log
 
 clean:
-	rm -rf $(PROJECT_DIR) $(LOG)
+	rm -rf synthesis_result_normal synthesis_result_axi_1 synthesis_result_axi_2 vitis_hls.log vitis_hls_normal.log vitis_hls_axi_1.log vitis_hls_axi_2.log

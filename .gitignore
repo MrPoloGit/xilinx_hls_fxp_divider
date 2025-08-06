@@ -1,3 +1,8 @@
-synthesis_result/
+synthesis_result_normal/
+synthesis_result_axi_1/
+synthesis_result_axi_2/
 vitis_hls.log
+vitis_hls_normal.log
+vitis_hls_axi_1.log
+vitis_hls_axi_2.log
 .vscode/
