@@ -1,17 +1,11 @@
 #include <iostream>
+#include <iostream>
 #include <cstdlib>
 #include <bitset>
 #include <ap_int.h>
 #include <ap_fixed.h>
 #include <vector>
-
-// 1 sign + 4 integer + 3 fractional = 8 bits total
-typedef ap_fixed<8, 5, AP_TRN, AP_SAT> fixed_t;
-// Not sure why limits isn't working for this
-static ap_int<8> raw_min = 0b10000000; 
-static ap_int<8> raw_max = 0b01111111;
-static fixed_t FixedPointMin = *reinterpret_cast<fixed_t*>(&raw_min); // -16.0
-static fixed_t FixedPointMax = *reinterpret_cast<fixed_t*>(&raw_max); // 15.875
+#include "divider_axi.h"
 
 struct test_case {
     fixed_t dividend;
@@ -20,72 +14,58 @@ struct test_case {
     std::string description;
 };
 
-void divider(
-    fixed_t dividend_i,
-    fixed_t divisor_i,
-    bool    &in_ready_o,
-    bool    in_valid_i,
-    fixed_t &quotient_o,
-    bool    out_ready_i,
-    bool    &out_valid_o
-);
-
 fixed_t generate_random_fixed_t() {
     uint8_t raw = static_cast<uint8_t>(rand() % 256);
     ap_int<8> signed_val = static_cast<ap_int<8>>(raw);
-    std::bitset<8> x(signed_val);
     fixed_t fixed_val = *reinterpret_cast<fixed_t*>(&signed_val);
-    std::bitset<8> y(fixed_val); // it gives the quantized fixed-point value converted to an integer
-
     return fixed_val;
 }
 
 int main() {
-    fixed_t dividend_i, divisor_i, quotient_o;
-    bool in_ready_o, in_valid_i, out_ready_i, out_valid_o;
-    float expected_quotient;
+    hls::stream<axis_in_t> in_stream;
+    hls::stream<axis_out_t> out_stream;
 
-    // Standard Random Test
-    std::cout << "STANDARD RANDOM TEST" << std::endl;
-    const int num_tests = 60;
-    for (int i = 0; i < num_tests; i++) {
-        std::cout << "Test: " << i << "\n";
-        // Pre set up
-        dividend_i  = 0;
-        divisor_i   = 1;
-        in_valid_i  = false;
-        out_ready_i = true;
-        divider(dividend_i, divisor_i, in_ready_o, in_valid_i, quotient_o, out_ready_i, out_valid_o);
-        
-        // Input valid information
-        dividend_i  = generate_random_fixed_t();
-        divisor_i   = generate_random_fixed_t();
-        in_valid_i  = true;
-        out_ready_i = true;
-        if (divisor_i == fixed_t(0)) {
-            if      (dividend_i < fixed_t(0)) expected_quotient = (float)FixedPointMin;
-            else if (dividend_i > fixed_t(0)) expected_quotient = (float)FixedPointMax;
-            else                              expected_quotient = (float)0;
+    std::cout << "GENERAL RANDOM TEST CASES" << std::endl;
+    int num_tests = 100;
+    for (int i = 1; i <= num_tests; i++){
+        fixed_t dividend = generate_random_fixed_t();
+        fixed_t divisor  = generate_random_fixed_t();
+        float expected_result;
+
+        if (divisor == fixed_t(0)) {
+            if      (dividend < fixed_t(0)) expected_result = (float)FixedPointMin;
+            else if (dividend > fixed_t(0)) expected_result = (float)FixedPointMax;
+            else                            expected_result = (float)0;
         } else {
-            expected_quotient = dividend_i/divisor_i;
-            if      (expected_quotient < (float)FixedPointMin) expected_quotient = (float)FixedPointMin;
-            else if (expected_quotient > (float)FixedPointMax) expected_quotient = (float)FixedPointMax;
+            expected_result = dividend/divisor;
+            if      (expected_result < (float)FixedPointMin) expected_result = (float)FixedPointMin;
+            else if (expected_result > (float)FixedPointMax) expected_result = (float)FixedPointMax;
         }
 
-        divider(dividend_i, divisor_i, in_ready_o, in_valid_i, quotient_o, out_ready_i, out_valid_o);
+        axis_in_t in_val;
+        in_val.data.range(7,0)   = *reinterpret_cast<ap_int<8>*>(&dividend);
+        in_val.data.range(15,8)  = *reinterpret_cast<ap_int<8>*>(&divisor);
+        in_val.last = 1;
+        in_stream.write(in_val);
 
-        if (out_valid_o) {
-            if (expected_quotient != (float)quotient_o) {
-                std::cout << "  NOT EQUAL   " << "\n";
-                std::cout << "  Result:   " << quotient_o        << "\n";
-                std::cout << "  Expected: " << expected_quotient << "\n"; 
+        divider_axi(in_stream, out_stream);
+
+        std::cout << "TEST " << i << ": ";
+        if (!out_stream.empty()) {
+            std::cout << "Valid Output\n";
+            axis_out_t out_val = out_stream.read();
+            fixed_t result = *reinterpret_cast<fixed_t*>(&out_val.data);
+            if (expected_result != (float)result) {
+                std::cout << "  NOT EQUAL\n";
             }
-            
+            std::cout << "  Dividend  " << dividend          << "\n";
+            std::cout << "  Divisor   " << divisor           << "\n";
+            std::cout << "  Result:   " << result            << "\n";
+            std::cout << "  Expected: " << expected_result << "\n";
         }
-        std::cout << std::endl;
+        std::cout << "\n";
     }
 
-    // Specific Test Cases
     std::cout << "SPECIFIC TEST CASES" << std::endl;
     std::vector<test_case> tests = {
         {7.75,    0.125,  15.875, "Same sign overflow check"},
@@ -97,44 +77,34 @@ int main() {
         {-14.875, -0.875, 15.875, "Divisor is negative, Divisor is negative, result is FixedPointMax"}
     };
 
-    for (size_t i = 0; i < tests.size(); i++) {
-        std::cout << "Test: " << i << "\n";
-        // Pre set up
-        dividend_i  = 0;
-        divisor_i   = 1;
-        in_valid_i  = false;
-        out_ready_i = true;
-        divider(dividend_i, divisor_i, in_ready_o, in_valid_i, quotient_o, out_ready_i, out_valid_o);
-        
-        // Input valid information
-        dividend_i  = tests[i].dividend;
-        divisor_i   = tests[i].divisor;
-        in_valid_i  = true;
-        out_ready_i = true;
-        if (divisor_i == fixed_t(0)) {
-            if      (dividend_i < fixed_t(0)) expected_quotient = (float)FixedPointMin;
-            else if (dividend_i > fixed_t(0)) expected_quotient = (float)FixedPointMax;
-            else                              expected_quotient = (float)0;
-        } else {
-            expected_quotient = dividend_i/divisor_i;
-            if      (expected_quotient < (float)FixedPointMin) expected_quotient = (float)FixedPointMin;
-            else if (expected_quotient > (float)FixedPointMax) expected_quotient = (float)FixedPointMax;
-        }
-        divider(dividend_i, divisor_i, in_ready_o, in_valid_i, quotient_o, out_ready_i, out_valid_o);
+    for (size_t i = 1; i <= tests.size(); i++) {
+        fixed_t dividend          = tests[i].dividend;
+        fixed_t divisor           = tests[i].divisor;
+        fixed_t expected_result = tests[i].expected_result;
 
-        if (out_valid_o) {
-            if (tests[i].expected_result != quotient_o) {
-                std::cout << "  NOT EQUAL   " << "\n";
-                std::cout << "  Dividend: " << dividend_i               << "\n";
-                std::cout << "  Divisor:  " << divisor_i                << "\n";
-                std::cout << "  Result:   " << quotient_o               << "\n";
-                std::cout << "  Expected: " << tests[i].expected_result << "\n"; 
+        axis_in_t in_val;
+        in_val.data.range(7,0)   = *reinterpret_cast<ap_int<8>*>(&dividend);
+        in_val.data.range(15,8)  = *reinterpret_cast<ap_int<8>*>(&divisor);
+        in_val.last = 1;
+        in_stream.write(in_val);
+
+        divider_axi(in_stream, out_stream);
+
+        std::cout << "TEST " << i << ": ";
+        if (!out_stream.empty()) {
+            std::cout << "Valid Output\n";
+            axis_out_t out_val = out_stream.read();
+            fixed_t result = *reinterpret_cast<fixed_t*>(&out_val.data);
+            if (expected_result != result) {
+                std::cout << "  NOT EQUAL\n";
             }
-
+            std::cout << "  Dividend  " << dividend          << "\n";
+            std::cout << "  Divisor   " << divisor           << "\n";
+            std::cout << "  Result:   " << result            << "\n";
+            std::cout << "  Expected: " << expected_result << "\n";
         }
-        std::cout << std::endl;
+        std::cout << "\n";
+    
     }
-
-    std::cout << "FINISHED TEST BENCH" << std::endl;
     return 0;
 }
