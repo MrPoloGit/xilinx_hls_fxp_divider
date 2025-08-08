@@ -26,8 +26,7 @@ fixed_t safe_division(fixed_t dividend, fixed_t divisor) {
 // Stage 1: Read from AXI stream and unpack operands
 static void read_inputs(hls::stream<axis_in_t> &s_axis,
                         hls::stream<fixed_t>   &dividend_fifo,
-                        hls::stream<fixed_t>   &divisor_fifo,
-                        hls::stream<ap_uint<1>> &last_fifo) {
+                        hls::stream<fixed_t>   &divisor_fifo) {
     if (!s_axis.empty()) {
         axis_in_t in_val = s_axis.read();
         ap_int<8> dividend_raw = in_val.data.range(7,0);
@@ -36,7 +35,6 @@ static void read_inputs(hls::stream<axis_in_t> &s_axis,
         fixed_t divisor  = *reinterpret_cast<fixed_t*>(&divisor_raw);
         dividend_fifo.write(dividend);
         divisor_fifo.write(divisor);
-        last_fifo.write(in_val.last);
     }
 }
 
@@ -54,13 +52,11 @@ static void compute_division(hls::stream<fixed_t> &dividend_fifo,
 
 // Stage 3: Write result to AXI output
 static void write_outputs(hls::stream<fixed_t> &result_fifo,
-                          hls::stream<ap_uint<1>> &last_fifo,
                           hls::stream<axis_out_t> &m_axis) {
-    if (!result_fifo.empty() && !last_fifo.empty()) {
+    if (!result_fifo.empty()) {
         fixed_t result = result_fifo.read();
         axis_out_t out_val;
         out_val.data = *reinterpret_cast<ap_int<8>*>(&result);
-        out_val.last = last_fifo.read();
         m_axis.write(out_val);
     }
 }
@@ -75,13 +71,11 @@ void divider_axi_2(hls::stream<axis_in_t>  &s_axis,
 
     // Internal FIFOs
     hls::stream<fixed_t> dividend_fifo("dividend_fifo"), divisor_fifo("divisor_fifo"), result_fifo("result_fifo");
-    hls::stream<ap_uint<1>> last_fifo("last_fifo");
     #pragma HLS STREAM variable=dividend_fifo depth=4
     #pragma HLS STREAM variable=divisor_fifo depth=4
     #pragma HLS STREAM variable=result_fifo  depth=4
-    #pragma HLS STREAM variable=last_fifo    depth=4
 
-    read_inputs(s_axis, dividend_fifo, divisor_fifo, last_fifo);
+    read_inputs(s_axis, dividend_fifo, divisor_fifo);
     compute_division(dividend_fifo, divisor_fifo, result_fifo);
-    write_outputs(result_fifo, last_fifo, m_axis);
+    write_outputs(result_fifo, m_axis);
 }
