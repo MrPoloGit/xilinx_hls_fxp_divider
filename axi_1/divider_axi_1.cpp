@@ -53,11 +53,9 @@ void divider_axi_1(hls::stream<axis_in_t>  &s_axis,
     #pragma HLS INTERFACE ap_ctrl_none port=return
     #pragma HLS PIPELINE II=1
 
-    // Static state: output register and valid flag
     static axis_out_t out_val;
     static bool       valid_reg = false;
 
-    // FSM-style handshaking
     if (!valid_reg && !s_axis.empty()) {
         // Accept new input
         axis_in_t in_val = s_axis.read();
